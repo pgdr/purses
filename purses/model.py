@@ -21,6 +21,9 @@ class Model(object):
     def columns(self):
         return len(self.df.columns)
 
+    def insert(self, val):
+        self.df.iat[self.row, self.col] = val
+
     def _assert_index(self, y, x):
         assert 0 <= y < self.rows, '0 <= {} < {}'.format(y, self.rows)
         assert 0 <= x < self.columns, '0 <= {} < {}'.format(x, self.columns)
@@ -34,8 +37,8 @@ class Model(object):
     def right(self):
         self.col += 1
 
-    def delete(self):
-        self.df.iat[self.row, self.col] = 0.
+    def delete(self, nan=float('nan')):
+        self.insert(nan)
 
     def cell(self, y=None, x=None):
         if y is None:
