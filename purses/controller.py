@@ -1,22 +1,22 @@
 import curses
-from .view import message, draw, CELL_WIDTH, PADDING
+from .view import View
 
 class Controller(object):
     def __init__(self, model, scr):
         self._shutdown = False
         self.model = model
         self.scr = scr
-        self.pad = curses.newpad(self.model.rows,
-                                 self.model.columns*(CELL_WIDTH + PADDING))
-
+        self.view = View(scr,
+                         self.model.rows,
+                         self.model.columns)
 
         def shutdown():
             self._shutdown = True
 
         def helptext():
-            self.message('q for quit, DEL for delete, '
-                         'UP/DOWN/RIGHT/LEFT to navigate, '
-                         '0-9 to insert')
+            self.view.message('q for quit, DEL for delete, '
+                              'UP/DOWN/RIGHT/LEFT to navigate, '
+                              '0-9 to insert')
 
         self._controlling = {
             'q': shutdown,
@@ -28,6 +28,11 @@ class Controller(object):
             'KEY_DOWN': model.down,
             'KEY_RIGHT': model.right,
             'KEY_LEFT': model.left,
+            # moving view:
+            'kUP5': self.view.up,
+            'kDN5': self.view.down,
+            'kRIT5': self.view.right,
+            'kLFT5': self.view.left,
         }
 
         def __insert(model, i):
@@ -60,11 +65,11 @@ class Controller(object):
         return False
 
     def message(self, msg):
-        message(self.scr, msg)
+        self.view.message(msg)
 
     def loop(self):
         while not self._shutdown:
-            draw(self.pad, self.model)
+            self.view.draw(self.model)
             user = self.scr.getkey()
             self.message(' '*100)  # clears previous message
             if self._nav(user):
