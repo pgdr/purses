@@ -7,8 +7,8 @@ class Controller(object):
         self.model = model
         self.scr = scr
         self.view = View(scr,
-                         self.model.rows,
-                         self.model.columns)
+                         min(10, self.model.rows),
+                         min(4, self.model.columns))
 
         def shutdown():
             self._shutdown = True
@@ -24,22 +24,24 @@ class Controller(object):
         }
 
         self._navigation = {
-            'KEY_UP': model.up,
-            'KEY_DOWN': model.down,
-            'KEY_RIGHT': model.right,
-            'KEY_LEFT': model.left,
+            'KEY_UP': self.view.moveup,
+            'KEY_DOWN': self.view.movedown,
+            'KEY_RIGHT': self.view.moveright,
+            'KEY_LEFT': self.view.moveleft,
             # moving view:
-            'kUP5': self.view.up,
-            'kDN5': self.view.down,
-            'kRIT5': self.view.right,
-            'kLFT5': self.view.left,
+            'kUP5': self.view.panup,
+            'kDN5': self.view.pandown,
+            'kRIT5': self.view.panright,
+            'kLFT5': self.view.panleft,
         }
 
         def __insert(model, i):
-            return lambda: model.insert(i)
+            return lambda: model.insert(i, self.view.coords)
 
+        def __delete(model):
+            return lambda: model.delete(self.view.coords)
         self._editing = {
-            'KEY_DC': model.delete,
+            'KEY_DC': __delete(model),
         }
         self._editing.update(
             {'{}'.format(i) : __insert(model, i) for i in range(10)}
@@ -73,7 +75,7 @@ class Controller(object):
             user = self.scr.getkey()
             self.message(' '*100)  # clears previous message
             if self._nav(user):
-                self.message(self.model.coords)
+                self.message(self.view.coords)
             elif self._editor(user):
                 self.message(user)
             elif self._control(user):

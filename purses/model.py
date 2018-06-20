@@ -3,16 +3,10 @@ import pandas as pd
 class Model(object):
     def __init__(self, df):
         self.df = df
-        self.row = 0
-        self.col = 0
 
     @staticmethod
     def load(df):
         return Model(df)
-
-    @property
-    def coords(self):
-        return self.row, self.col
 
     @property
     def rows(self):
@@ -21,30 +15,20 @@ class Model(object):
     def columns(self):
         return len(self.df.columns)
 
-    def insert(self, val):
-        self.df.iat[self.row, self.col] = val
+    def insert(self, val, coords):
+        row, col = coords
+        self.df.iat[row, col] = val
 
-    def _assert_index(self, y, x):
+    def _assert_index(self, row, col):
+        y, x = row, col
         assert 0 <= y < self.rows, '0 <= {} < {}'.format(y, self.rows)
         assert 0 <= x < self.columns, '0 <= {} < {}'.format(x, self.columns)
 
-    def up(self):
-        self.row = max(0, self.row - 1)
-    def down(self):
-        self.row += 1
-    def left(self):
-        self.col = max(0, self.col - 1)
-    def right(self):
-        self.col += 1
+    def delete(self, coords, nan=float('nan')):
+        self.insert(nan, coords)
 
-    def delete(self, nan=float('nan')):
-        self.insert(nan)
-
-    def cell(self, y=None, x=None):
-        if y is None:
-            y = self.row
-        if x is None:
-            x = self.col
+    def cell(self, row, col):
+        y, x = row, col
         self._assert_index(y, x)
         r = list(self.df.iloc[y])
         cell = str(r[x])

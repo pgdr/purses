@@ -8,15 +8,28 @@ class View(object):
     def __init__(self, scr, rows, cols):
         self.scr = scr
         self._top = self._left = 0
+        self._row = self._col = 0  # relative index to _top and _left
+        self._cols = cols
+        self._rows = rows
         self.pad = curses.newpad(rows, cols*(CELL_WIDTH + PADDING))
 
-    def up(self):
+
+    def moveup(self):
+        self._row = max(0, self._row - 1)
+    def movedown(self):
+        self._row += 1
+    def moveleft(self):
+        self._col = max(0, self._col - 1)
+    def moveright(self):
+        self._col += 1
+
+    def panup(self):
         self._top = max(0, self._top - 1)
-    def down(self):
+    def pandown(self):
         self._top += 1
-    def left(self):
+    def panleft(self):
         self._left = max(0, self._left - 1)
-    def right(self):
+    def panright(self):
         self._left += 1
 
     def message(self, msg):
@@ -25,19 +38,23 @@ class View(object):
         self.scr.addstr(0, 0, msg, curses.A_BOLD)
         self.scr.refresh()
 
+    @property
+    def coords(self):
+        """Return the index in the dataframe, that is the indices + pan."""
+        return self._row + self._top, self._col + self._left
+
     def draw(self, model):
-        rows, cols = model.rows, model.columns
-        for y in range(self._top, self._top + 10):
-            for x in range(self._left, self._left + 5):
-                entry = model.cell(y, x)
+        for y in range(0, self._rows):
+            for x in range(0, self._cols):
+                entry = model.cell(y+self._top, x+self._left)
                 entry = entry[:max(len(entry), CELL_WIDTH)]
                 try:
-                    if (y,x) == model.coords:
-                        self.pad.addstr(y, (x*(CELL_WIDTH+PADDING)), entry, curses.A_UNDERLINE)
+                    if (y,x) == (self._row, self._col):
+                        self.pad.addstr(y, (x*(CELL_WIDTH+PADDING)), entry, curses.A_REVERSE)
                     else:
                         self.pad.addstr(y, (x*(CELL_WIDTH+PADDING)), entry)
                 except curses.error:
                     pass
 
         # 0,0 is topleft cell
-        self.pad.refresh(self._top,self._left, self._top+5,self._left+5, 20,75)
+        self.pad.refresh(0,0,5,5, 20,75)
