@@ -35,6 +35,8 @@ class Controller(object):
             'kLFT5': self.view.panleft,
         }
 
+        helptext()
+
         def __insert(model, i):
             return lambda: model.insert(i, self.view.coords)
 
