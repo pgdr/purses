@@ -7,8 +7,8 @@ class Model(object):
         self.col = 0
 
     @staticmethod
-    def load(fname):
-        return Model(pd.read_csv(fname))
+    def load(df):
+        return Model(df)
 
     @property
     def coords(self):

@@ -3,15 +3,11 @@ import curses
 from .controller import Controller
 from .model import Model
 
-
-def main():
+def _start(df):
     stdscr = curses.initscr()
     stdscr.keypad(True)
-    from sys import argv
-    if len(argv) != 2:
-        exit('Usage: purses.py data/iris.csv')
     try:
-        model = Model.load(argv[1])
+        model = Model.load(df)
         controller = Controller(model, stdscr)
         controller.loop()
     except Exception:
@@ -20,3 +16,15 @@ def main():
         curses.nocbreak()
         curses.echo()
         curses.endwin()
+
+def load(df):
+    if isinstance(df, str):
+        import pandas as pd
+        df = pd.read_csv(df)
+    _start(df)
+
+def main():
+    from sys import argv
+    if len(argv) != 2:
+        exit('Usage: purses.py data/iris.csv')
+    load(argv[1])
