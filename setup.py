@@ -12,7 +12,6 @@ setup(
     author_email='pgdr@equinor.com',
     description="Purses, a Pandas Curses",
     tests_require=[
-        'unittest',
         'pandas',
     ],
     install_requires=['pandas'],

@@ -2,6 +2,7 @@
 import curses
 from .controller import Controller
 from .model import Model
+from .view import View
 
 def _start(df):
     stdscr = curses.initscr()

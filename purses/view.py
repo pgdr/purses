@@ -5,13 +5,14 @@ PADDING = 3 # to accomodate ' | '
 
 class View(object):
 
-    def __init__(self, scr, rows, cols):
+    def __init__(self, scr, rows, cols, mock=False):
         self.scr = scr
         self._top = self._left = 0
         self._row = self._col = 0  # relative index to _top and _left
         self._cols = cols
         self._rows = rows
-        self.pad = curses.newpad(rows, cols*(CELL_WIDTH + PADDING))
+        if not mock:
+            self.pad = curses.newpad(rows, cols*(CELL_WIDTH + PADDING))
 
 
     def moveup(self):
