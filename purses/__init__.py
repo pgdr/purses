@@ -16,6 +16,7 @@ def _start(df):
         curses.nocbreak()
         curses.echo()
         curses.endwin()
+        del stdscr
 
 def load(df):
     if isinstance(df, str):
