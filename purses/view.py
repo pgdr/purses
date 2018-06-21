@@ -45,9 +45,26 @@ class View(object):
         return self._row + self._top, self._col + self._left
 
     def draw(self, model):
+        self.pad.clear()
         for y in range(0, self._rows):
             for x in range(0, self._cols):
-                entry = model.cell(y+self._top, x+self._left)
+                if x == 0 and y == 0:
+                    entry = ''
+                elif x == 0:
+                    if y - 1 + self._top >= len(model.df.index):
+                        entry = ''
+                    else:
+                        entry = str(model.df.index[y-1 + self._top])
+                elif y == 0:
+                    if x-1+self._left >= len(model.df.columns):
+                        entry = ''
+                    else:
+                        entry = model.df.columns[x-1+self._left]
+                else:
+                    if x-1+self._left >= len(model.df.columns) or y + self._top - 1 >= len(model.df):
+                        entry = ''
+                    else:
+                        entry = model.cell(y-1+self._top, x-1+self._left)
                 entry = entry[:max(len(entry), CELL_WIDTH)]
                 try:
                     if (y,x) == (self._row, self._col):

@@ -6,9 +6,10 @@ class Controller(object):
         self._shutdown = False
         self.model = model
         self.scr = scr
+        height, width = scr.getmaxyx()
         self.view = View(scr,
-                         min(10, self.model.rows),
-                         min(4, self.model.columns))
+                         min(height-2, self.model.rows),
+                         min(width-5, self.model.columns+1)) # +1 due to index col
 
         def shutdown():
             self._shutdown = True
