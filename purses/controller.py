@@ -49,7 +49,6 @@ class Controller(object):
         self.__init_bindings(bindings)
         self.helptext()
 
-
     def __init_bindings(self, bindings):
         def __insert(val):
             def __f(df, row, col, *args, **kwargs):

@@ -1,7 +1,10 @@
 import curses
 
-CELL_WIDTH = 2 + 1 + 3 # 12.123
-PADDING = 3 # to accomodate ' | '
+CELL_WIDTH = 3 + 1 + 5 # 123.12345
+PADDING = 5 # to accomodate ' | '
+
+PADDING_TOP = 4
+PADDING_BOT = 3
 
 class View(object):
 
@@ -14,9 +17,9 @@ class View(object):
         if not mock:
             self.pad = curses.newpad(rows, cols*(CELL_WIDTH + PADDING))
 
-        self.col_index = scr.subwin(6, 3)
+        self.col_index = scr.subwin(PADDING_TOP, 3)
         self.header = scr.subwin(3, 10)
-        self.cols = [scr.subwin(6, 8*(i+1)) for i in range(cols)]
+        self.cols = [scr.subwin(PADDING_TOP, (CELL_WIDTH+PADDING-1)*(i+1)) for i in range(cols)]
 
     def moveup(self):
         self._row = max(0, self._row - 1)
@@ -57,9 +60,13 @@ class View(object):
         """Return the index in the dataframe, that is the indices + pan."""
         return self._row + self._top, self._col + self._left
 
+    def __grid_row_iter(self):
+        for row in range(self._rows - PADDING_TOP - PADDING_BOT):
+            yield row
+
     def _draw_index(self, model):
         self.col_index.clear()
-        for y in range(10): # no index for top left cell
+        for y in self.__grid_row_iter():
             self.col_index.addstr(y, 0, 'i={}'.format(model.df.index[y+self._top]))
         self.col_index.refresh()
 
@@ -69,14 +76,21 @@ class View(object):
     def _draw_cols(self, model):
         for i in range(self._cols-1):
             self.cols[i].clear()
-            for j in range(0, 10):
+            for j in self.__grid_row_iter():
                 entry = model.cell(j+self._top, i)
+                entry = str(entry).rjust(CELL_WIDTH + PADDING - 1)
                 self.cols[i].addstr(j, 0, entry, self.__attr_cell(j,i))
             self.cols[i].refresh()
 
     def _draw_header(self, model):
         self.header.clear()
-        header = ' '.join(list(model.df.columns))  # todo add correct spacing
+        def fit_or_pad(head):
+            head = head.rjust(CELL_WIDTH + PADDING - 1)
+            if len(head) > CELL_WIDTH + PADDING:
+                head = head[len(head) - (CELL_WIDTH + PADDING-1):]
+            return head
+
+        header = ''.join(map(fit_or_pad, model.df.columns))
         self.header.addstr(0, 0, header)
         self.header.refresh()
 
