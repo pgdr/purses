@@ -44,3 +44,70 @@ Inserting values into the current cell is currently limited to the integers 0-9,
 and is done via typing `0` (or any other one-digit'd integer, resp.).
 
 Quit Purses with `q`.
+
+
+## Defining your own key bindings
+
+Any sufficiently advanced tool supports programmatic tools bindings.
+
+Any key press event can trigger a callback with the provided signature below,
+however, it is advisable to add also `*args` and `**kwargs` to the function
+parameter list to accomodate for future additions.
+
+```python
+function(df: pandas.DataFrame,
+         row: int,
+         col: int,
+         nav: navigator,
+         msg: messenger,
+         user_input: user_input) -> DataFrame
+```
+
+If a key (e.g. `s`) is bound to the above `function`, everytime `s` is pressed,
+`function` is called, with `df` being the dataframe in question, and `row` and
+`col` the coordinates to the cursor's cell.
+
+The `nav` object has nine functions, `up`, `down`, `left`, `right`, for moving
+the cursor, as well as for panning (or scrolling) the view, `panup`, `pandown`,
+`panleft`, `panright`.  Finally, it also has a function `to(row, col)` to move
+to a specific cell.
+
+The `msg` function can be given any string to display in the message area and
+the `user_input` is used to get a string from the user.
+
+
+If a none-None value is returned from the callback, it is assumed to be the new
+dataframe, and the current dataframe is replaced with the returned dataframe.
+
+
+### Some examples
+
+
+#### Example:
+
+```python
+def log_cell_content(df, row, col, *args, **kwargs):
+    with open('log', 'a') as out:
+        out.write('{},{} contains {}'.format(row, col, df.iloc[row][col]))
+
+purses.load(df, bindings={'l': log_cell_content})
+```
+
+
+#### Example with state:
+
+
+```python
+
+class summer:
+    def __init__(self):
+        self.sum_ = 0
+    def add(self, df, row, col):
+        self.sum_ += df.iloc[row][col]
+    def flush(self, df, row, col):
+        df.set_value(row, col, self.sum_)
+        self.sum_ = 0
+
+autumn = summer()
+purses.load(df, bindings={'s': autumn.add, 'f': autumn.flush})
+```
