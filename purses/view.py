@@ -40,6 +40,10 @@ class View(object):
         self._left += 1
         self.moveleft()
 
+    def to(self, row, col):
+        self._row = min(0, max(row, self._rows))
+        self._col = min(0, max(col, self._cols))
+
     def message(self, msg):
         if not isinstance(msg, str):
             msg = '{} [{}]'.format(msg, type(msg))
