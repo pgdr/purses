@@ -41,8 +41,10 @@ class View(object):
         self.moveleft()
 
     def to(self, row, col):
-        self._row = min(0, max(row, self._rows))
-        self._col = min(0, max(col, self._cols))
+        self._row = max(0, min(row, self._rows))
+        self._col = max(0, min(col, self._cols))
+        self._top = self._row
+        self._left = self._col
 
     def message(self, msg):
         if not isinstance(msg, str):

@@ -50,11 +50,6 @@ class Controller(object):
         self.helptext()
 
 
-
-
-
-
-
     def __init_bindings(self, bindings):
         def __insert(val):
             def __f(df, row, col, *args, **kwargs):
@@ -127,6 +122,8 @@ class Controller(object):
             user = self.scr.getkey()
             self.messenger(' '*100)  # clears previous message
             if user in self._bindings:
-                self._bindings[user](*callback_args)
+                res = self._bindings[user](*callback_args)
+                if res is not None:
+                    self.model.df = res
             else:
                 self.messenger('Unkown key {}'.format(user))
