@@ -100,13 +100,13 @@ class Controller(object):
         self.navigator.right()
 
     def panup(self, *args, **kwargs):
-        self.navigator.up()
+        self.navigator.panup()
     def pandown(self, *args, **kwargs):
-        self.navigator.down()
+        self.navigator.pandown()
     def panleft(self, *args, **kwargs):
-        self.navigator.left()
+        self.navigator.panleft()
     def panright(self, *args, **kwargs):
-        self.navigator.right()
+        self.navigator.panright()
 
     def loop(self):
         while not self._shutdown:
