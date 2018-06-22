@@ -43,6 +43,38 @@ class summer:
         self.sum_ = 0
 
 
+def live(M, i, j):
+    def in_(coor):
+        x, y = coor
+        return 0 <= x < M.shape[0] and 0 <= y and y < M.shape[1]
+
+    count = 0
+    for r in range(-1, 2):
+        for c in range(-1, 2):
+            if c == r == 0:
+                continue
+            e = i + r, j + c
+            if in_(e) and M[e[0]][e[1]] > 0:
+                count += 1
+
+    if M[i][j] == 1:
+        return 2 <= count <= 3
+    return 1 if count == 3 else 0
+
+
+def game_of_life(df, row, col, nav, msg, *args, **kwargs):
+    import copy
+    G = df.as_matrix()
+    Gp = copy.deepcopy(G)
+    s = G.shape
+    for i in range(s[0]):
+        for j in range(s[1]):
+            Gp[i][j] = live(G, i, j)
+    for i in range(s[0]):
+        for j in range(s[1]):
+            df.iat[i, j] = Gp[i][j]
+
+
 def default_bindings():
     autumn = summer()
     cp = clipboard()
@@ -50,5 +82,6 @@ def default_bindings():
                 'i' : cell_input,
                 '/' : search,
                 's' : autumn.add, 'f': autumn.flush,
+                '\n': game_of_life,
     }
     return bindings
