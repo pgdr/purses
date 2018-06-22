@@ -14,6 +14,9 @@ class View(object):
         if not mock:
             self.pad = curses.newpad(rows, cols*(CELL_WIDTH + PADDING))
 
+        self.col_index = scr.subwin(6, 3)
+        self.header = scr.subwin(3, 10)
+        self.cols = [scr.subwin(6, 8*(i+1)) for i in range(cols)]
 
     def moveup(self):
         self._row = max(0, self._row - 1)
@@ -44,35 +47,30 @@ class View(object):
         """Return the index in the dataframe, that is the indices + pan."""
         return self._row + self._top, self._col + self._left
 
-    def draw(self, model):
-        self.pad.clear()
-        for y in range(0, self._rows):
-            for x in range(0, self._cols):
-                if x == 0 and y == 0:
-                    entry = ''
-                elif x == 0:
-                    if y - 1 + self._top >= len(model.df.index):
-                        entry = ''
-                    else:
-                        entry = str(model.df.index[y-1 + self._top])
-                elif y == 0:
-                    if x-1+self._left >= len(model.df.columns):
-                        entry = ''
-                    else:
-                        entry = model.df.columns[x-1+self._left]
-                else:
-                    if x-1+self._left >= len(model.df.columns) or y + self._top - 1 >= len(model.df):
-                        entry = ''
-                    else:
-                        entry = model.cell(y-1+self._top, x-1+self._left)
-                entry = entry[:max(len(entry), CELL_WIDTH)]
-                try:
-                    if (y,x) == (self._row, self._col):
-                        self.pad.addstr(y, (x*(CELL_WIDTH+PADDING)), entry, curses.A_REVERSE)
-                    else:
-                        self.pad.addstr(y, (x*(CELL_WIDTH+PADDING)), entry)
-                except curses.error:
-                    pass
+    def _draw_index(self, model):
+        self.col_index.clear()
+        for y in range(10): # no index for top left cell
+            self.col_index.addstr(y, 0, 'i={}'.format(model.df.index[y+self._top]))
+        self.col_index.refresh()
 
-        # 0,0 is topleft cell
-        self.pad.refresh(0,0,5,5, 20,75)
+    def __attr_cell(self, row, col):
+        return curses.A_REVERSE if self.coords == (row, col) else curses.A_NORMAL
+
+    def _draw_cols(self, model):
+        for i in range(self._cols-1):
+            self.cols[i].clear()
+            for j in range(0, 10):
+                entry = model.cell(j+self._top, i)
+                self.cols[i].addstr(j, 0, entry, self.__attr_cell(j,i))
+            self.cols[i].refresh()
+
+    def _draw_header(self, model):
+        self.header.clear()
+        header = ' '.join(list(model.df.columns))  # todo add correct spacing
+        self.header.addstr(0, 0, header)
+        self.header.refresh()
+
+    def draw(self, model):
+        self._draw_header(model)
+        self._draw_index(model)
+        self._draw_cols(model)
