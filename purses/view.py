@@ -29,12 +29,16 @@ class View(object):
 
     def panup(self):
         self._top = max(0, self._top - 1)
+        self.movedown()
     def pandown(self):
         self._top += 1
+        self.moveup()
     def panleft(self):
         self._left = max(0, self._left - 1)
+        self.moveright()
     def panright(self):
         self._left += 1
+        self.moveleft()
 
     def message(self, msg):
         if not isinstance(msg, str):
