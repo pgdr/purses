@@ -67,7 +67,7 @@ class View(object):
     def _draw_index(self, model):
         self.col_index.clear()
         for y in self.__grid_row_iter():
-            self.col_index.addstr(y, 0, 'i={}'.format(model.df.index[y+self._top]))
+            self.col_index.addstr(y, 0, '{}'.format(model.df.index[y+self._top]).rjust(PADDING))
         self.col_index.refresh()
 
     def __attr_cell(self, row, col):

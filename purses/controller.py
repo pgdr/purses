@@ -31,7 +31,25 @@ class _messenger:
         self.view = view
     def __call__(self, message):
         self.view.message(message)
+    def clear(self):
+        self(' '*100)
 
+class _user_input:
+    def __init__(self, scr, messenger):
+        self.scr = scr
+        self.messenger = messenger
+    def __call__(self, message='Enter input: ', terminator='\n'):
+        user = ''
+        self.messenger.clear()
+        self.messenger(message)
+        msg = []
+        while user != terminator:
+            msg.append(user)
+            user = self.scr.getkey()
+        self.messenger.clear()
+        inpt = ''.join(msg)
+        self.messenger('User input "{}"'.format(inpt))
+        return inpt
 
 
 class Controller(object):
@@ -45,6 +63,7 @@ class Controller(object):
                          min(width-5, self.model.columns+1)) # +1 due to index col
         self.navigator = _navigator(self.view)
         self.messenger = _messenger(self.view)
+        self.user_input = _user_input(self.scr, self.messenger)
 
         self.__init_bindings(bindings)
         self.helptext()
@@ -107,22 +126,26 @@ class Controller(object):
     def panright(self, *args, **kwargs):
         self.navigator.panright()
 
+    def _do_callback(self, user_key):
+        callback_args = (self.model.df,
+                         self.view.coords[0], # row
+                         self.view.coords[1], # col
+                         self.navigator,
+                         self.messenger,
+                         self.user_input
+        )
+        res = self._bindings[user_key](*callback_args)
+        if res is not None:
+            self.model.df = res
+
+
     def loop(self):
         while not self._shutdown:
             self.view.draw(self.model)
 
-            callback_args = (self.model.df,
-                             self.view.coords[0], # row
-                             self.view.coords[1], # col
-                             self.navigator,
-                             self.messenger,
-                             )
-
             user = self.scr.getkey()
-            self.messenger(' '*100)  # clears previous message
+            self.messenger.clear()
             if user in self._bindings:
-                res = self._bindings[user](*callback_args)
-                if res is not None:
-                    self.model.df = res
+                self._do_callback(user)
             else:
                 self.messenger('Unkown key {}'.format(user))
