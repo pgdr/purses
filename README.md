@@ -102,10 +102,12 @@ purses.load(df, bindings={'l': log_cell_content})
 class summer:
     def __init__(self):
         self.sum_ = 0
-    def add(self, df, row, col):
-        self.sum_ += df.iloc[row][col]
-    def flush(self, df, row, col):
-        df.set_value(row, col, self.sum_)
+    def add(self, df, row, col, nav, msg, *args, **kwargs):
+        self.sum_ += df.iat[row, col]
+        msg('Current sum: {}'.format(self.sum_))
+    def flush(self, df, row, col, nav, msg, *args, **kwargs):
+        df.iat[row, col] = self.sum_
+        msg('Flushed: {}'.format(self.sum_))
         self.sum_ = 0
 
 autumn = summer()

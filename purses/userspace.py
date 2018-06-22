@@ -31,10 +31,24 @@ def search(df, row, col, nav, msg, user_input, *args, **kwargs):
                 return
     msg('Did not find {srch}'.format(srch=srch))
 
+class summer:
+    def __init__(self):
+        self.sum_ = 0
+    def add(self, df, row, col, nav, msg, *args, **kwargs):
+        self.sum_ += df.iat[row, col]
+        msg('Current sum: {}'.format(self.sum_))
+    def flush(self, df, row, col, nav, msg, *args, **kwargs):
+        df.iat[row, col] = self.sum_
+        msg('Flushed: {}'.format(self.sum_))
+        self.sum_ = 0
+
+
 def default_bindings():
+    autumn = summer()
     cp = clipboard()
     bindings = {'c': cp.copy, 'v': cp.paste, 'x': cp.cut,
                 'i' : cell_input,
-                's' : search,
+                '/' : search,
+                's' : autumn.add, 'f': autumn.flush,
     }
     return bindings
