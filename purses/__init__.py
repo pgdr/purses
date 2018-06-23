@@ -65,4 +65,4 @@ def main():
         exit('Usage: purses.py data/iris.csv')
     load(argv[1])
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
