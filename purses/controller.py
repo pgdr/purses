@@ -5,6 +5,14 @@ class _navigator:
     def __init__(self, view):
         self.view = view
 
+    @property
+    def row(self):
+        return self.view.coords[0]
+
+    @property
+    def col(self):
+        return self.view.coords[1]
+
     def up(self):
         self.view.moveup()
     def down(self):
@@ -26,30 +34,27 @@ class _navigator:
     def to(self, row, col):
         self.view.to(row, col)
 
-class _messenger:
-    def __init__(self, view):
-        self.view = view
-    def __call__(self, message):
-        self.view.message(message)
-    def clear(self):
-        self(' '*100)
 
-class _user_input:
-    def __init__(self, scr, messenger):
+class _io:
+    def __init__(self, scr, view):
         self.scr = scr
-        self.messenger = messenger
-    def __call__(self, message='Enter input: ', terminator='\n'):
+        self.view = view
+    def user_input(self, message='Enter input: ', terminator='\n'):
         user = ''
-        self.messenger.clear()
-        self.messenger(message)
+        self.clear()
+        self.message(message)
         msg = []
         while user != terminator:
             msg.append(user)
             user = self.scr.getkey()
-        self.messenger.clear()
+        self.clear()
         inpt = ''.join(msg)
-        self.messenger('User input "{}"'.format(inpt))
+        self.message('User input "{}"'.format(inpt))
         return inpt
+    def message(self, message):
+        self.view.message(message)
+    def clear(self):
+        self.message(' '*100)
 
 
 class Controller(object):
@@ -62,20 +67,19 @@ class Controller(object):
                          min(height-2, self.model.rows),
                          min(width-5, self.model.columns+1)) # +1 due to index col
         self.navigator = _navigator(self.view)
-        self.messenger = _messenger(self.view)
-        self.user_input = _user_input(self.scr, self.messenger)
+        self.io = _io(self.scr, self.view)
 
         self.__init_bindings(bindings)
         self.helptext()
 
     def __init_bindings(self, bindings):
         def __insert(val):
-            def __f(df, row, col, *args, **kwargs):
-                df.iat[row, col] = val
+            def __f(df, nav, *args, **kwargs):
+                df.iat[nav.row, nav.col] = val
             return __f
 
-        def __delete(df, row, col, *args, **kwargs):
-            return __insert(float('nan'))(df, row, col)
+        def __delete(df, nav, *args, **kwargs):
+            return __insert(float('nan'))(df, nav.row, nav.col)
 
         self._bindings = {
             # control
@@ -104,9 +108,9 @@ class Controller(object):
         self._shutdown = True
 
     def helptext(self, *args, **kwargs):
-        self.messenger('q for quit, DEL for delete, '
-                       'UP/DOWN/RIGHT/LEFT to navigate, '
-                       '0-9 to insert')
+        self.io.message('q for quit, DEL for delete, '
+                        'UP/DOWN/RIGHT/LEFT to navigate, '
+                        '0-9 to insert')
 
     def moveup(self, *args, **kwargs):
         self.navigator.up()
@@ -128,11 +132,8 @@ class Controller(object):
 
     def _do_callback(self, user_key):
         callback_args = (self.model.df,
-                         self.view.coords[0], # row
-                         self.view.coords[1], # col
                          self.navigator,
-                         self.messenger,
-                         self.user_input
+                         self.io,
         )
         res = self._bindings[user_key](*callback_args)
         if res is not None:
@@ -144,8 +145,8 @@ class Controller(object):
             self.view.draw(self.model)
 
             user = self.scr.getkey()
-            self.messenger.clear()
+            self.io.clear()
             if user in self._bindings:
                 self._do_callback(user)
             else:
-                self.messenger('Unkown key {}'.format(user))
+                self.io.message('Unkown key {}'.format(user))

@@ -29,25 +29,25 @@ def load(tabular, bindings=None):
        The `bindings` argument is optional and can be a mapping from curses keys
        (e.g., 's', '2', or 'KEY_UP') to functions with signature
 
-           function(df, row, col, nav, msg, user_input) -> df / None
+           function(df, nav, io) -> df / None
 
        and if the return value is a dataframe, that will be the new dataframe.
        It is also possible to inplace manipulate df.  It is advisable that the
        signature is actually
 
-           function(df, row, col, nav, msg, user_input, *args, **kwargs)
+           function(df, nav, io, *args, **kwargs)
 
        to accommodate for future changes.
 
-       The object `nav` has 9 functions: up, down, right, left, panup, pandown,
+       The object `nav` has 11 functions: up, down, right, left, panup, pandown,
        panright, panleft, and to.  The function to(row, col) puts curser in
-       given coord.
+       given coord.  In addition it holds the current row and col.
 
-       The messenger, msg, is a function that takes a string and write the
-       string to the message area.
-
-       The user_input function is called to get input from user.  It is
-       terminated by a newline, but that can be configured.
+       The io object has two messages for output, message and clear, where
+       message is a function that takes a string and writes the string to the
+       message area.  io also has a function user_input which is called to get
+       input from user.  It is terminated by a newline, but that can be
+       configured.
 
     """
 

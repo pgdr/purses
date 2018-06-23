@@ -1,27 +1,30 @@
 class clipboard:
     def __init__(self):
         self.val = float('nan')
-    def copy(self, df, row, col, nav, msg, *args, **kwargs):
-        self.val = df.iat[row,col]
-        msg('copied {}'.format(self.val))
-    def paste(self, df, row, col, nav, msg, *args, **kwargs):
-        df.iat[row, col] = self.val
-        msg('paste {}'.format(self.val))
-    def cut(self, df, row, col, nav, msg, *args, **kwargs):
-        self.copy(df, row, col, nav, msg, *args, **kwargs)
-        df.iat[row, col] = float('nan')
-        msg('cut {}'.format(self.val))
 
-def cell_input(df, row, col, nav, msg, user_input, *args, **kwargs):
-    inpt = user_input('Enter value to input: ')
+    def copy(self, df, nav, io, *args, **kwargs):
+        self.val = df.iat[nav.row, nav.col]
+        io.message('copied {}'.format(self.val))
+
+    def paste(self, df, nav, io, *args, **kwargs):
+        df.iat[nav.row, nav.col] = self.val
+        io.message('paste {}'.format(self.val))
+
+    def cut(self, df, nav, io, *args, **kwargs):
+        self.copy(df, nav, io, *args, **kwargs)
+        df.iat[nav.row, nav.col] = float('nan')
+        io.message('cut {}'.format(self.val))
+
+def cell_input(df, nav, io, *args, **kwargs):
+    inpt = io.user_input('Enter value to input: ')
     try:
         inpt = float(inpt)
-        df.iat[row, col] = inpt
+        df.iat[nav.row, nav.col] = inpt
     except ValueError as err:
-        msg(err)
+        io.message(err)
 
-def search(df, row, col, nav, msg, user_input, *args, **kwargs):
-    inpt = user_input('Search: ')
+def search(df, nav, io, *args, **kwargs):
+    inpt = io.user_input('Search: ')
     srch = str(inpt).strip()
     for r in range(len(df)):
         for c in range(len(df.iloc[r])):
@@ -29,17 +32,19 @@ def search(df, row, col, nav, msg, user_input, *args, **kwargs):
             if val == srch:
                 nav.to(r, c)
                 return
-    msg('Did not find {srch}'.format(srch=srch))
+    io.message('Did not find {srch}'.format(srch=srch))
 
 class summer:
     def __init__(self):
         self.sum_ = 0
-    def add(self, df, row, col, nav, msg, *args, **kwargs):
-        self.sum_ += df.iat[row, col]
-        msg('Current sum: {}'.format(self.sum_))
-    def flush(self, df, row, col, nav, msg, *args, **kwargs):
-        df.iat[row, col] = self.sum_
-        msg('Flushed: {}'.format(self.sum_))
+
+    def add(self, df, nav, io, *args, **kwargs):
+        self.sum_ += df.iat[nav.row, nav.col]
+        io.message('Current sum: {}'.format(self.sum_))
+
+    def flush(self, df, nav, io, *args, **kwargs):
+        df.iat[nav.row, nav.col] = self.sum_
+        io.message('Flushed: {}'.format(self.sum_))
         self.sum_ = 0
 
 
@@ -62,7 +67,7 @@ def live(M, i, j):
     return 1 if count == 3 else 0
 
 
-def game_of_life(df, row, col, nav, msg, *args, **kwargs):
+def game_of_life(df, nav, io, *args, **kwargs):
     import copy
     G = df.as_matrix()
     Gp = copy.deepcopy(G)
