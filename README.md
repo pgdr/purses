@@ -56,27 +56,24 @@ parameter list to accomodate for future additions.
 
 ```python
 function(df: pandas.DataFrame,
-         row: int,
-         col: int,
          nav: navigator,
-         msg: messenger,
-         user_input: user_input) -> DataFrame
+         io: io) -> DataFrame
 ```
 
 If a key (e.g. `s`) is bound to the above `function`, everytime `s` is pressed,
-`function` is called, with `df` being the dataframe in question, and `row` and
-`col` the coordinates to the cursor's cell.
+`function` is called, with `df` being the dataframe in question.
 
 The `nav` object has nine functions, `up`, `down`, `left`, `right`, for moving
 the cursor, as well as for panning (or scrolling) the view, `panup`, `pandown`,
 `panleft`, `panright`.  Finally, it also has a function `to(row, col)` to move
-to a specific cell.
+to a specific cell.  `nav` also holds `row` and `col` the coordinates to the
+cursor's cell.
 
-The `msg` function can be given any string to display in the message area and
-the `user_input` is used to get a string from the user.
+The `io` object has a function `message` which can be given any string to
+display in the message area and `user_input` is used to get a string from the
+user.
 
-
-If a none-None value is returned from the callback, it is assumed to be the new
+If a none-`None` value is returned from the callback, it is assumed to be the new
 dataframe, and the current dataframe is replaced with the returned dataframe.
 
 
@@ -86,7 +83,8 @@ dataframe, and the current dataframe is replaced with the returned dataframe.
 #### Example:
 
 ```python
-def log_cell_content(df, row, col, *args, **kwargs):
+def log_cell_content(df, nav, *args, **kwargs):
+    row, col = nav.row, nav.col
     with open('log', 'a') as out:
         out.write('{},{} contains {}'.format(row, col, df.iloc[row][col]))
 
@@ -102,11 +100,11 @@ purses.load(df, bindings={'l': log_cell_content})
 class summer:
     def __init__(self):
         self.sum_ = 0
-    def add(self, df, row, col, nav, msg, *args, **kwargs):
-        self.sum_ += df.iat[row, col]
+    def add(self, df, nav, msg, *args, **kwargs):
+        self.sum_ += df.iat[nav.row, nav.col]
         msg('Current sum: {}'.format(self.sum_))
-    def flush(self, df, row, col, nav, msg, *args, **kwargs):
-        df.iat[row, col] = self.sum_
+    def flush(self, df, nav, msg, *args, **kwargs):
+        df.iat[nav.row, nav.col] = self.sum_
         msg('Flushed: {}'.format(self.sum_))
         self.sum_ = 0
 
