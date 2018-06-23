@@ -70,16 +70,18 @@ class View(object):
             self.col_index.addstr(y, 0, '{}'.format(model.df.index[y+self._top]).rjust(PADDING))
         self.col_index.refresh()
 
-    def __attr_cell(self, row, col):
-        return curses.A_REVERSE if self.coords == (row, col) else curses.A_NORMAL
+    def __attr_cell(self, row, col, highlight):
+        if self.coords == (row, col):
+            return curses.A_REVERSE
+        return highlight.get((row, col), curses.A_NORMAL)
 
-    def _draw_cols(self, model):
+    def _draw_cols(self, model, highlight):
         for i in range(self._cols-1):
             self.cols[i].clear()
             for j in self.__grid_row_iter():
                 entry = model.cell(j+self._top, i)
                 entry = str(entry).rjust(CELL_WIDTH + PADDING - 1)
-                self.cols[i].addstr(j, 0, entry, self.__attr_cell(j,i))
+                self.cols[i].addstr(j, 0, entry, self.__attr_cell(j,i,highlight))
             self.cols[i].refresh()
 
     def _draw_header(self, model):
@@ -94,7 +96,7 @@ class View(object):
         self.header.addstr(0, 0, header)
         self.header.refresh()
 
-    def draw(self, model):
+    def draw(self, model, highlight):
         self._draw_header(model)
         self._draw_index(model)
-        self._draw_cols(model)
+        self._draw_cols(model, highlight)

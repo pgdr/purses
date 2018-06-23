@@ -136,17 +136,24 @@ class Controller(object):
                          self.io,
         )
         res = self._bindings[user_key](*callback_args)
-        if res is not None:
-            self.model.df = res
-
+        if res:
+            if res[0] is not None:
+                self.model.df = res[0]
+            if res[1]:
+                return res[1]
+        return {}
 
     def loop(self):
+        highlight = {}
         while not self._shutdown:
-            self.view.draw(self.model)
+            with open('log', 'a') as f:
+                f.write(str(highlight))
+                f.write('\n')
+            self.view.draw(self.model, highlight)
 
             user = self.scr.getkey()
             self.io.clear()
             if user in self._bindings:
-                self._do_callback(user)
+                highlight = self._do_callback(user)
             else:
                 self.io.message('Unkown key {}'.format(user))

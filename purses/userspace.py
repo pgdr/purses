@@ -1,3 +1,5 @@
+import curses
+
 class clipboard:
     def __init__(self):
         self.val = float('nan')
@@ -72,12 +74,16 @@ def game_of_life(df, nav, io, *args, **kwargs):
     G = df.as_matrix()
     Gp = copy.deepcopy(G)
     s = G.shape
+    highlight = {}
     for i in range(s[0]):
         for j in range(s[1]):
             Gp[i][j] = live(G, i, j)
     for i in range(s[0]):
         for j in range(s[1]):
             df.iat[i, j] = Gp[i][j]
+            if Gp[i][j]:
+                highlight[(i, j)] = curses.A_REVERSE
+    return (None, highlight)
 
 
 def default_bindings():
