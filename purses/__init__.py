@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import curses  # for key bindings only
+
 from .controller import Controller
 from .model import Model
 
@@ -23,6 +25,9 @@ def square(getter, setter, cursor):
     val = getter(*cursor)
     setter(val**2, *cursor)
 
+def deleter(getter, setter, cursor):
+    setter(float('inf'), *cursor)
+
 def load(tabular, bindings=None):
     """Load the tabular data into curses.
 
@@ -43,6 +48,7 @@ def load(tabular, bindings=None):
         {
             'p': printer,
             's': square,
+            curses.KEY_DC: deleter,
             'a': autumn.add,
             'f': autumn.flush,
         }
