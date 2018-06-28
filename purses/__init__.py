@@ -1,7 +1,27 @@
 #!/usr/bin/env python
-
 from .controller import Controller
+from .model import Model
 
+class summer:
+    def __init__(self):
+        self.sum_ = 0
+    def add(self, getter, setter, cursor):
+        self.sum_ += getter(*cursor)
+    def flush(self, getter, setter, cursor):
+        setter(self.sum_, *cursor)
+        self.sum_ = 0
+
+def printer(getter, setter, cursor):
+    r,c = cursor
+    if c >= 0:
+        msg = '{}: {}'.format(cursor, getter(r,c))
+    else:
+        msg = '{}: (at index)'.format((r,c+1))
+    print(msg)
+
+def square(getter, setter, cursor):
+    val = getter(*cursor)
+    setter(val**2, *cursor)
 
 def load(tabular, bindings=None):
     """Load the tabular data into curses.
@@ -16,8 +36,18 @@ def load(tabular, bindings=None):
         import pandas as pd
         name = tabular
         tabular = pd.read_csv(tabular)
-    view = Controller(tabular, name)
-    view.run()
+    model = Model(tabular, name)
+    cntrl = Controller(model)
+    autumn = summer()
+    cntrl.add_handlers(
+        {
+            'p': printer,
+            's': square,
+            'a': autumn.add,
+            'f': autumn.flush,
+        }
+    )
+    cntrl.run()
 
 def main():
     from sys import argv
