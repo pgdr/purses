@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import purses
 
 if __name__ == '__main__':

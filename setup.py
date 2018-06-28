@@ -4,7 +4,7 @@ from setuptools import setup
 import purses
 setup(
     name='purses',
-    version='0.0.5',
+    version='0.0.6',
     packages=[
         'purses',
     ],
@@ -14,7 +14,7 @@ setup(
     tests_require=[
         'pandas',
     ],
-    install_requires=['pandas'],
+    install_requires=['pandas', 'npyscreen'],
     test_suite='tests',
     entry_points={
         'console_scripts': [
