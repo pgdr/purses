@@ -4,35 +4,54 @@ class clipboard:
     def __init__(self):
         self.val = float('nan')
 
-    def copy(self, df, nav, io, *args, **kwargs):
-        self.val = df.iat[nav.row, nav.col]
+    def copy(self, model, nav, io, *args, **kwargs):
+        self.val = model.get(nav.row, nav.col)
         io.message('copied {}'.format(self.val))
 
-    def paste(self, df, nav, io, *args, **kwargs):
-        df.iat[nav.row, nav.col] = self.val
+    def paste(self, model, nav, io, *args, **kwargs):
+        model.set(self.val)
         io.message('paste {}'.format(self.val))
 
-    def cut(self, df, nav, io, *args, **kwargs):
-        self.copy(df, nav, io, *args, **kwargs)
-        df.iat[nav.row, nav.col] = float('nan')
+    def cut(self, model, nav, io, *args, **kwargs):
+        self.copy(model, nav, io, *args, **kwargs)
+        model.set(float('nan'))
         io.message('cut {}'.format(self.val))
 
-def cell_input(df, nav, io, *args, **kwargs):
-    inpt = io.user_input('Enter value to input: ')
-    try:
-        inpt = float(inpt)
-        df.iat[nav.row, nav.col] = inpt
-    except ValueError as err:
-        io.message(err)
 
-def search(df, nav, io, *args, **kwargs):
+def printer(model, nav, io, *args, **kwargs):
+    r,c = model.cursor
+    if c >= 0:
+        msg = '{}: {}'.format(cursor, getter(r,c))
+    else:
+        msg = '{}: (at index)'.format((r,c+1))
+    print(msg)
+
+def square(model, nav, io, *args, **kwargs):
+    val = model.get()
+    model.set(val**2)
+
+def deleter(model, nav, io, *args, **kwargs):
+    model.set(float('inf'))
+
+
+def cell_input(model, nav, io, *args, **kwargs):
+    #inpt = io.user_input('Enter value to input: ')
+    #try:
+    #    inpt = float(inpt)
+    #    df.iat[nav.row, nav.col] = inpt
+    #except ValueError as err:
+    #    io.message(err)
+    pass
+
+def search(model, nav, io, *args, **kwargs):
     inpt = io.user_input('Search: ')
+    inpt = 5.0
     srch = str(inpt).strip()
-    for r in range(len(df)):
-        for c in range(len(df.iloc[r])):
-            val = str(df.iat[r, c]).strip()
+    for r in range(model.rows):
+        for c in range(model.cols):
+            val = str(model.get(r,c)).strip()
             if val == srch:
-                nav.to(r, c)
+                print(r, c)
                 return
     io.message('Did not find {srch}'.format(srch=srch))
 
@@ -40,13 +59,13 @@ class summer:
     def __init__(self):
         self.sum_ = 0
 
-    def add(self, df, nav, io, *args, **kwargs):
-        self.sum_ += df.iat[nav.row, nav.col]
-        io.message('Current sum: {}'.format(self.sum_))
+    def add(self, model, nav, io, *args, **kwargs):
+        self.sum_ += model.get(nav.row, nav.col)
+        #io.message('Current sum: {}'.format(self.sum_))
 
-    def flush(self, df, nav, io, *args, **kwargs):
-        df.iat[nav.row, nav.col] = self.sum_
-        io.message('Flushed: {}'.format(self.sum_))
+    def flush(self, model, nav, io, *args, **kwargs):
+        model.set(self.sum_)
+        #io.message('Flushed: {}'.format(self.sum_))
         self.sum_ = 0
 
 
@@ -69,22 +88,17 @@ def live(M, i, j):
     return 1 if count == 3 else 0
 
 
-def game_of_life(df, nav, io, *args, **kwargs):
+def game_of_life(model, nav, io, *args, **kwargs):
     import copy
-    G = df.as_matrix()
+    G = model.df.values
     Gp = copy.deepcopy(G)
     s = G.shape
-    highlight = {}
     for i in range(s[0]):
         for j in range(s[1]):
             Gp[i][j] = live(G, i, j)
     for i in range(s[0]):
         for j in range(s[1]):
-            df.iat[i, j] = Gp[i][j]
-            if Gp[i][j]:
-                highlight[(i, j)] = curses.A_REVERSE
-    return (None, highlight)
-
+            model.set(Gp[i][j], i, j)
 
 def default_bindings():
     autumn = summer()
@@ -93,6 +107,10 @@ def default_bindings():
                 'i' : cell_input,
                 '/' : search,
                 's' : autumn.add, 'f': autumn.flush,
-                '\n': game_of_life,
+                'L': game_of_life,
+
+                'p': printer,
+                '2': square,
+                curses.KEY_DC: deleter,
     }
     return bindings
