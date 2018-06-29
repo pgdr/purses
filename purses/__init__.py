@@ -52,4 +52,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
