@@ -1,34 +1,46 @@
 #!/usr/bin/env python
+import argparse
+
 from .bindings import binding
 from .controller import Controller
 from .model import Model
 from . import userspace
 
 
-def load(tabular, bindings=None):
+def load(tabular, bindings=None, delimiter=None):
     """Load the tabular data into curses.
 
        The tabular data can be a filename to a csv file or a Pandas dataframe.
        Launches a curses view.
 
     """
+    if delimiter is None:
+        delimiter = ','  # default Pandas behavior
 
     name = ''
     if isinstance(tabular, str):
         import pandas as pd
         name = tabular
-        tabular = pd.read_csv(tabular)
+        tabular = pd.read_csv(tabular, delimiter=delimiter)
     model = Model(tabular, name)
     cntrl = Controller(model)
     cntrl.add_handlers(binding.bindings)
     cntrl.run()
 
 
+def _setup_args():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument(
+        'csv', help='The path to the csv file')
+    arg_parser.add_argument(
+        '--delimiter', help='Choose delimiter')
+    options, _ = arg_parser.parse_known_args()
+    return options
+
+
 def main():
-    from sys import argv
-    if len(argv) != 2:
-        exit('Usage: purses.py data/iris.csv')
-    load(argv[1])
+    options = _setup_args()
+    load(options.csv, delimiter=options.delimiter)
 
 
 if __name__ == '__main__':
