@@ -24,8 +24,14 @@ def load(tabular, bindings=None, delimiter=None):
         tabular = pd.read_csv(tabular, delimiter=delimiter)
     model = Model(tabular, name)
     cntrl = Controller(model)
-    cntrl.add_handlers(binding.bindings)
-    cntrl.run()
+
+    if bindings is None:
+        bindings = {}
+    bindings_ = {}
+    bindings_.update(binding.bindings)
+    bindings_.update(bindings)
+    cntrl.add_handlers(bindings_)
+    cntrl.run()  # npyscreen event loop, calls Controller.main
 
 
 def _setup_args():
