@@ -92,7 +92,7 @@ To _square_ the element of a cell, we can hook the key `2` to the squaring
 function:
 
 ```python
-@binding('2')
+@purses.binding('2')
 def square(self, model, *args, **kwargs):
     model.set(model.get()**2)
 ```
@@ -100,7 +100,7 @@ def square(self, model, *args, **kwargs):
 Indeed, when using decorators to bind the key to a function, there is no reason
 to hang on to the name, so the above could be implemented as
 ```python
-@binding('2')
+@purses.binding('2')
 def _(self, model, *args, **kwargs):
     model.set(model.get()**2)
 ```
