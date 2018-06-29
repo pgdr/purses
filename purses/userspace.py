@@ -1,4 +1,6 @@
 import curses
+from .bindings import binding
+
 
 class clipboard:
     def __init__(self):
@@ -18,22 +20,25 @@ class clipboard:
         io.message('cut {}'.format(self.val))
 
 
-def printer(model, nav, io, *args, **kwargs):
-    r,c = model.cursor
-    if c >= 0:
-        msg = '{}: {}'.format(cursor, getter(r,c))
-    else:
-        msg = '{}: (at index)'.format((r,c+1))
-    print(msg)
-
-def square(model, nav, io, *args, **kwargs):
-    val = model.get()
-    model.set(val**2)
-
-def deleter(model, nav, io, *args, **kwargs):
-    model.set(float('inf'))
+_cb = clipboard()
 
 
+@binding('c')
+def _cp(model, nav, io, *args, **kwargs):
+    _cb.copy(model, nav, io, *args, **kwargs)
+
+
+@binding('v')
+def _paste(model, nav, io, *args, **kwargs):
+    _cb.paste(model, nav, io, *args, **kwargs)
+
+
+@binding('x')
+def _cut(model, nav, io, *args, **kwargs):
+    _cb.cut(model, nav, io, *args, **kwargs)
+
+
+@binding('i')
 def cell_input(model, nav, io, *args, **kwargs):
     #inpt = io.user_input('Enter value to input: ')
     #try:
@@ -43,33 +48,49 @@ def cell_input(model, nav, io, *args, **kwargs):
     #    io.message(err)
     pass
 
+
+@binding('/')
 def search(model, nav, io, *args, **kwargs):
     inpt = io.user_input('Search: ')
     inpt = 5.0
     srch = str(inpt).strip()
     for r in range(model.rows):
         for c in range(model.cols):
-            val = str(model.get(r,c)).strip()
+            val = str(model.get(r, c)).strip()
             if val == srch:
                 print(r, c)
                 return
     io.message('Did not find {srch}'.format(srch=srch))
+
 
 class summer:
     def __init__(self):
         self.sum_ = 0
 
     def add(self, model, nav, io, *args, **kwargs):
-        self.sum_ += model.get(nav.row, nav.col)
-        #io.message('Current sum: {}'.format(self.sum_))
+        self.sum_ += model.get()
+        io.message('Current sum: {}'.format(self.sum_))
 
     def flush(self, model, nav, io, *args, **kwargs):
         model.set(self.sum_)
-        #io.message('Flushed: {}'.format(self.sum_))
+        io.message('Flushed: {}'.format(self.sum_))
         self.sum_ = 0
 
 
-def live(M, i, j):
+autumn = summer()
+
+
+@binding('s')
+def _add(model, nav, io, *args, **kwargs):
+    autumn.add(model, nav, io, *args, **kwargs)
+
+
+@binding('f')
+def _flush(model, nav, io, *args, **kwargs):
+    autumn.flush(model, nav, io, *args, **kwargs)
+
+
+def _live(M, i, j):
     def in_(coor):
         x, y = coor
         return 0 <= x < M.shape[0] and 0 <= y and y < M.shape[1]
@@ -88,6 +109,7 @@ def live(M, i, j):
     return 1 if count == 3 else 0
 
 
+@binding('L')
 def game_of_life(model, nav, io, *args, **kwargs):
     import copy
     G = model.df.values
@@ -95,22 +117,7 @@ def game_of_life(model, nav, io, *args, **kwargs):
     s = G.shape
     for i in range(s[0]):
         for j in range(s[1]):
-            Gp[i][j] = live(G, i, j)
+            Gp[i][j] = _live(G, i, j)
     for i in range(s[0]):
         for j in range(s[1]):
             model.set(Gp[i][j], i, j)
-
-def default_bindings():
-    autumn = summer()
-    cp = clipboard()
-    bindings = {'c': cp.copy, 'v': cp.paste, 'x': cp.cut,
-                'i' : cell_input,
-                '/' : search,
-                's' : autumn.add, 'f': autumn.flush,
-                'L': game_of_life,
-
-                'p': printer,
-                '2': square,
-                curses.KEY_DC: deleter,
-    }
-    return bindings

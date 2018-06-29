@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+from .bindings import binding
 from .controller import Controller
 from .model import Model
-from .userspace import default_bindings
+from . import userspace
 
 
 def load(tabular, bindings=None):
@@ -19,14 +20,16 @@ def load(tabular, bindings=None):
         tabular = pd.read_csv(tabular)
     model = Model(tabular, name)
     cntrl = Controller(model)
-    cntrl.add_handlers(default_bindings())
+    cntrl.add_handlers(binding.bindings)
     cntrl.run()
+
 
 def main():
     from sys import argv
     if len(argv) != 2:
         exit('Usage: purses.py data/iris.csv')
     load(argv[1])
+
 
 if __name__ == '__main__':
     main()

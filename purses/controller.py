@@ -1,14 +1,19 @@
 import npyscreen
 
+
 class _io(object):
     def __init__(self):
         pass
+
     def user_input(self, message='Enter input: '):
         return 'Not supported'
+
     def message(self, message):
         print(message)
+
     def clear(self):
         pass
+
 
 class _model(object):
     def __init__(self, nav, model, tbl):
@@ -26,6 +31,7 @@ class _model(object):
     @property
     def rows(self):
         return len(self)
+
     @property
     def cols(self):
         return len(list(self._model_.df.index))
@@ -49,7 +55,7 @@ class _model(object):
         row, col = self._to_row_col(row, col)
         self._model_.df.iat[row, col] = val
         for idx, model_val in enumerate(list(self._model_.df.iloc[row])):
-            self._tbl.values[row][idx+1] = model_val
+            self._tbl.values[row][idx + 1] = model_val
 
 
 class _navigator(object):
@@ -59,25 +65,31 @@ class _navigator(object):
 
     @property
     def cursor(self):
-        r,c = self._tbl.edit_cell
+        r, c = self._tbl.edit_cell
         if self._model_.show_index:
-            return r, c-1
+            return r, c - 1
         return r, c
+
     @property
     def row(self):
         return self.cursor[0]
+
     @property
     def col(self):
         return self.cursor[1]
 
     def moveup(self):
         self._tbl.h_move_line_up(1)
+
     def movedown(self):
         self._tbl.h_move_line_down(1)
+
     def moveleft(self):
         self._tbl.h_move_cell_left(1)
+
     def moveright(self):
         self._tbl.h_move_cell_right(1)
+
 
 class Controller(npyscreen.NPSApp):
     def __init__(self, model):
@@ -85,17 +97,18 @@ class Controller(npyscreen.NPSApp):
         self.gui = None
         self.tbl = None
         self._handlers = {}
-        self.nav = None     # navigator for callback
+        self.nav = None  # navigator for callback
         self.getset = None  # get and set for callback
-        self.io = None      # io for callback
+        self.io = None  # io for callback
 
     def _init_tbl(self):
-        self.tbl = self.gui.add(npyscreen.GridColTitles,
-                                relx=4,
-                                rely=3,
-                                width=72,
-                                col_titles=self.model.columns)
-        self.tbl.values=[]
+        self.tbl = self.gui.add(
+            npyscreen.GridColTitles,
+            relx=4,
+            rely=3,
+            width=72,
+            col_titles=self.model.columns)
+        self.tbl.values = []
         for x in range(len(self.model)):
             self.tbl.values.append(self.model.row(x))
 
@@ -104,11 +117,11 @@ class Controller(npyscreen.NPSApp):
         self.getset = _model(self.nav, self.model, self.tbl)
         self.io = _io()
 
-
     def _handle_wrapper(self, func):
         def _handle(key):
             res = func(self.getset, self.nav, self.io)
             return res
+
         return _handle
 
     def add_handlers(self, hdl):
