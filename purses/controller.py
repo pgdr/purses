@@ -1,99 +1,6 @@
 import npyscreen
 
-
-class _io(object):
-    def __init__(self, status_area):
-        self.status = status_area
-
-    def user_input(self, message='Enter input: '):
-        return 'Not supported'
-
-    def message(self, message):
-        if self.status:
-            self.status.value = message
-            self.status.display()
-
-    def clear(self):
-        pass
-        #if self.status:
-            #self.self.status.clear()
-
-
-class _model(object):
-    def __init__(self, nav, model, tbl):
-        self._nav = nav
-        self._model_ = model
-        self._tbl = tbl
-
-    @property
-    def df(self):
-        return self._model_.df
-
-    def __len__(self):
-        return len(self._model_.df)
-
-    @property
-    def rows(self):
-        return len(self)
-
-    @property
-    def cols(self):
-        return len(list(self._model_.df.index))
-
-    def _to_row_col(self, row=None, col=None):
-        if isinstance(row, tuple) and col is None:
-            row, col = row
-        if row is None:
-            row = self._nav.row
-        if col is None:
-            col = self._nav.col
-        return row, col
-
-    def get(self, row=None, col=None):
-        row, col = self._to_row_col(row, col)
-        if col < 0:
-            return self._model_.df.index[row]
-        return self._model_.df.iat[row, col]
-
-    def set(self, val, row=None, col=None):
-        row, col = self._to_row_col(row, col)
-        self._model_.df.iat[row, col] = val
-        for idx, model_val in enumerate(list(self._model_.df.iloc[row])):
-            self._tbl.values[row][idx + 1] = model_val
-
-
-class _navigator(object):
-    def __init__(self, model, tbl):
-        self._model_ = model
-        self._tbl = tbl
-
-    @property
-    def cursor(self):
-        r, c = self._tbl.edit_cell
-        if self._model_.show_index:
-            return r, c - 1
-        return r, c
-
-    @property
-    def row(self):
-        return self.cursor[0]
-
-    @property
-    def col(self):
-        return self.cursor[1]
-
-    def moveup(self):
-        self._tbl.h_move_line_up(1)
-
-    def movedown(self):
-        self._tbl.h_move_line_down(1)
-
-    def moveleft(self):
-        self._tbl.h_move_cell_left(1)
-
-    def moveright(self):
-        self._tbl.h_move_cell_right(1)
-
+from .callbackutil import callback_io, callback_navigator, callback_model
 
 def _max_col_width(df):
     m = 4  # npyscreen.SimpleGrid does not like < 3, so 4 is safe
@@ -174,16 +81,15 @@ class Controller(npyscreen.NPSApp):
                                 width=72,
                                 column_width=_max_col_width(self.model.df),
                                 col_titles=self.model.columns,
-                                **pos['table'],
-        )
+                                **pos['table'])
         self.tbl.values = []
         for x in range(len(self.model)):
             self.tbl.values.append(self.model.row(x))
 
         # create navigator object
-        self.nav = _navigator(self.model, self.tbl)
-        self.getset = _model(self.nav, self.model, self.tbl)
-        self.io = _io(self.status)
+        self.nav = callback_navigator(self.model, self.tbl)
+        self.getset = callback_model(self.nav, self.model, self.tbl)
+        self.io = callback_io(self.status)
 
     def _handle_wrapper(self, func):
         def _handle(key):

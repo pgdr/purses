@@ -6,7 +6,6 @@ from .controller import Controller
 from .model import Model
 from . import userspace
 
-
 def load(tabular, bindings=None, delimiter=None):
     """Load the tabular data into curses.
 
@@ -53,3 +52,4 @@ if __name__ == '__main__':
     main()
 
 __version__ = '0.0.10'
+__all__ = ['binding', 'load']
