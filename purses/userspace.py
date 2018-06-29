@@ -121,3 +121,7 @@ def game_of_life(model, nav, io, *args, **kwargs):
     for i in range(s[0]):
         for j in range(s[1]):
             model.set(Gp[i][j], i, j)
+
+@binding('2')
+def _(model, *args, **kwargs):
+    model.set(model.get()**2)
