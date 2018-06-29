@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='purses',
-    version='0.0.8',
+    version='0.0.9',
     packages=[
         'purses',
     ],
