@@ -2,17 +2,21 @@ import npyscreen
 
 
 class _io(object):
-    def __init__(self):
-        pass
+    def __init__(self, status_area):
+        self.status = status_area
 
     def user_input(self, message='Enter input: '):
         return 'Not supported'
 
     def message(self, message):
-        print(message)
+        if self.status:
+            self.status.value = message
+            self.status.display()
 
     def clear(self):
         pass
+        #if self.status:
+            #self.self.status.clear()
 
 
 class _model(object):
@@ -91,23 +95,87 @@ class _navigator(object):
         self._tbl.h_move_cell_right(1)
 
 
+def _max_col_width(df):
+    m = 4  # npyscreen.SimpleGrid does not like < 3, so 4 is safe
+    m = max(m, max(map(len, map(str, list(df.columns)))))
+    for c in df.columns:
+        for e in df[c]:
+            m = max(m, len(str(e)))
+    return m
+
 class Controller(npyscreen.NPSApp):
     def __init__(self, model):
         self.model = model
         self.gui = None
         self.tbl = None
+        self.status = None
+        self.description = None
         self._handlers = {}
         self.nav = None  # navigator for callback
         self.getset = None  # get and set for callback
         self.io = None  # io for callback
 
+
+    def __widget_pos(self):
+        # three widgets: description, table, status
+        pos = {
+            'description': {
+                'max_height': 0,
+                'relx': 4,
+                'rely': 2,
+            },
+            'table': {
+                'max_height': self.gui.lines - 5,
+                'relx': 4,
+                'rely': 2,
+            },
+            'status': {
+                'max_height': 0,
+                'relx': 4,
+                'rely': -4,
+            },
+        }
+        if self.gui.lines > 35: # large window, has both status and desc
+            pos['description']['max_height'] = 10
+            pos['status']['max_height'] = 2
+            pos['table']['rely'] += 11
+            pos['table']['max_height'] -= 13
+        elif self.gui.lines > 25: # medium window, has only desc
+            pos['description']['max_height'] = 10
+            pos['table']['max_height'] -= 11
+            pos['table']['rely'] += 11
+        return pos
+
     def _init_tbl(self):
-        self.tbl = self.gui.add(
-            npyscreen.GridColTitles,
-            relx=4,
-            rely=3,
-            width=72,
-            col_titles=self.model.columns)
+        pos = self.__widget_pos()
+
+        ## Draw the description widget
+        if pos['description']['max_height'] > 0:
+            content = str(self.model.df.describe())
+            self.description = self.gui.add(npyscreen.MultiLineEdit,
+                                            value=content,
+                                            editable=False,
+                                            **pos['description'])
+            self.description.set_editable(False)
+
+
+        ## Draw the status widget
+        if pos['status']['max_height'] > 0:
+            content = 'Status'
+            self.status = self.gui.add(npyscreen.MultiLineEdit,
+                                       value=content,
+                                       hidden=False,
+                                       editable=False,
+                                       **pos['status'])
+
+
+        ## Draw the table widget (always)
+        self.tbl = self.gui.add(npyscreen.GridColTitles,
+                                width=72,
+                                column_width=_max_col_width(self.model.df),
+                                col_titles=self.model.columns,
+                                **pos['table'],
+        )
         self.tbl.values = []
         for x in range(len(self.model)):
             self.tbl.values.append(self.model.row(x))
@@ -115,7 +183,7 @@ class Controller(npyscreen.NPSApp):
         # create navigator object
         self.nav = _navigator(self.model, self.tbl)
         self.getset = _model(self.nav, self.model, self.tbl)
-        self.io = _io()
+        self.io = _io(self.status)
 
     def _handle_wrapper(self, func):
         def _handle(key):
