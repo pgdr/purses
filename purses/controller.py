@@ -9,12 +9,29 @@ class summer:
         print('flush', arg)
 
 
+class _navigator(object):
+    def __init__(self, up, down, left, right):
+        self._up = up
+        self._down = down
+        self._left = left
+        self._right = right
+
+    def moveup(self):
+        self._up(1)
+    def movedown(self):
+        self._down(1)
+    def moveleft(self):
+        self._left(1)
+    def moveright(self):
+        self._right(1)
+
 class Controller(npyscreen.NPSApp):
     def __init__(self, model):
         self.model = model
         self.gui = None
         self.tbl = None
         self._handlers = {}
+        self.nav = None
 
     def _init_tbl(self):
         self.tbl = self.gui.add(npyscreen.GridColTitles,
@@ -25,6 +42,15 @@ class Controller(npyscreen.NPSApp):
         self.tbl.values=[]
         for x in range(len(self.model)):
             self.tbl.values.append(self.model.row(x))
+
+        # create navigator object
+        self.nav = _navigator(
+            self.tbl.h_move_line_up,
+            self.tbl.h_move_line_down,
+            self.tbl.h_move_cell_left,
+            self.tbl.h_move_cell_right,
+            )
+
 
     def _get_iat(self, row, col):
         if col < 0:
@@ -45,7 +71,7 @@ class Controller(npyscreen.NPSApp):
 
     def _handle_wrapper(self, func):
         def _handle(key):
-            res = func(self._get_iat, self._set_iat, self.cursor)
+            res = func(self._get_iat, self._set_iat, self.cursor, self.nav)
             return res
         return _handle
 

@@ -7,13 +7,13 @@ from .model import Model
 class summer:
     def __init__(self):
         self.sum_ = 0
-    def add(self, getter, setter, cursor):
+    def add(self, getter, setter, cursor, *args):
         self.sum_ += getter(*cursor)
-    def flush(self, getter, setter, cursor):
+    def flush(self, getter, setter, cursor, *args):
         setter(self.sum_, *cursor)
         self.sum_ = 0
 
-def printer(getter, setter, cursor):
+def printer(getter, setter, cursor, *args):
     r,c = cursor
     if c >= 0:
         msg = '{}: {}'.format(cursor, getter(r,c))
@@ -21,11 +21,11 @@ def printer(getter, setter, cursor):
         msg = '{}: (at index)'.format((r,c+1))
     print(msg)
 
-def square(getter, setter, cursor):
+def square(getter, setter, cursor, *args):
     val = getter(*cursor)
     setter(val**2, *cursor)
 
-def deleter(getter, setter, cursor):
+def deleter(getter, setter, cursor, *args):
     setter(float('inf'), *cursor)
 
 def load(tabular, bindings=None):
