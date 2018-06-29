@@ -96,3 +96,11 @@ function:
 def square(self, model, *args, **kwargs):
     model.set(model.get()**2)
 ```
+
+Indeed, when using decorators to bind the key to a function, there is no reason
+to hang on to the name, so the above could be implemented as
+```python
+@binding('2')
+def _(self, model, *args, **kwargs):
+    model.set(model.get()**2)
+```
