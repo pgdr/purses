@@ -14,9 +14,11 @@ class Controller(npyscreen.NPSApp):
     def __init__(self, model):
         self.model = model
         self.gui = None
+        self.pos = None
         self.tbl = None
         self.status = None
         self.description = None
+        self.sort_form = None
         self._handlers = {}
         self.nav = None  # navigator for callback
         self.getset = None  # get and set for callback
@@ -51,6 +53,7 @@ class Controller(npyscreen.NPSApp):
             pos['description']['max_height'] = 10
             pos['table']['max_height'] -= 11
             pos['table']['rely'] += 11
+        self.pos = pos
         return pos
 
     def _init_tbl(self):
@@ -101,8 +104,41 @@ class Controller(npyscreen.NPSApp):
         for handler in hdl:
             self._handlers[handler] = self._handle_wrapper(hdl[handler])
 
+    def sortby(self, val):
+        values = self.sort_form.value
+        if not values:
+            return
+        col = list(self.model.df.columns)[values[0]]
+        self.model.df.sort_values(by=col, inplace=True)
+        for row in range(len(self.model.df)):
+            for idx, model_val in enumerate(list(self.model.df.iloc[row])):
+                self.tbl.values[row][idx + 1] = model_val
+        self.tbl.update()
+        self.sort_form.hidden = True
+        self.sort_form.clear()
+        self.sort_form.editing = False
+        del self.sort_form
+        self.sort_form = None
+        self.description.hidden = False
+        self.description.update()
+
+    def popup(self, val):
+
+        self.description.hidden = True
+        self.description.clear()
+        self.sort_form = self.gui.add(npyscreen.TitleSelectOne,
+                                      name="Sort by ...",
+                                      values=list(self.model.df.columns),
+                                      scroll_exit=True,
+                                      width=30,
+                                      **self.pos['description'])
+        self.sort_form.update(clear=True)
+        self.sort_form.add_handlers({ 'S': self.sortby })
+
+
     def main(self):
         self.gui = npyscreen.ActionFormMinimal(name=self.model.fname)
         self.gui.add_handlers(self._handlers)
+        self.gui.add_handlers({ 'S': self.popup})
         self._init_tbl()
         self.gui.edit()
