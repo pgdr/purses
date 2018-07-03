@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 import argparse
 
+try:
+    import pandas as pd
+    pd.set_option('display.max_colwidth', -1)  # disable truncation
+    pd.set_option('display.width', 10**10)  # 10**10=inf for all practical purposes
+except ImportError:
+    pass  # Well actually, you don't really _need_ pandas, I guess...
+
 from .bindings import binding
 from .controller import Controller
 from .model import Model
