@@ -78,7 +78,6 @@ class Controller(npyscreen.NPSApp):
 
         ## Draw the table widget (always)
         self.tbl = self.gui.add(npyscreen.GridColTitles,
-                                width=72,
                                 column_width=_max_col_width(self.model.df),
                                 col_titles=self.model.columns,
                                 **pos['table'])
