@@ -2,6 +2,13 @@ import npyscreen
 
 from .callbackutil import callback_io, callback_navigator, callback_model
 
+def _max_col_width(df):
+    m = 4  # npyscreen.SimpleGrid does not like < 3, so 4 is safe
+    m = max(m, 2+max(map(len, map(str, list(df.columns)))))
+    for c in df.columns:
+        for e in df[c]:
+            m = max(m, len(str(e)))
+    return m
 
 class Controller(npyscreen.NPSApp):
     def __init__(self, model):
@@ -71,6 +78,7 @@ class Controller(npyscreen.NPSApp):
 
         ## Draw the table widget (always)
         self.tbl = self.gui.add(npyscreen.GridColTitles,
+                                column_width=_max_col_width(self.model.df),
                                 col_titles=self.model.columns,
                                 **pos['table'])
         self.tbl.values = []
