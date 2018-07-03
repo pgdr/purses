@@ -16,7 +16,10 @@ class clipboard:
 
     def cut(self, model, nav, io, *args, **kwargs):
         self.copy(model, nav, io, *args, **kwargs)
-        model.set(float('nan'))
+        try:
+            model.set(float('nan'))
+        except ValueError:
+            model.set(0)
         io.message('cut {}'.format(self.val))
 
 
