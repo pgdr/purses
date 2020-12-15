@@ -3,29 +3,31 @@ import argparse
 
 try:
     import pandas as pd
-    pd.set_option('display.max_colwidth', -1)  # disable truncation
-    pd.set_option('display.width', 10**10)  # 10**10=inf for all practical purposes
+
+    pd.set_option("display.max_colwidth", None)  # disable truncation
+    pd.set_option("display.width", 10 ** 10)  # 10**10=inf for all practical purposes
 except ImportError:
     pass  # Well actually, you don't really _need_ pandas, I guess...
 
 from .bindings import binding
 from .controller import Controller
 from .model import Model
-from . import userspace
+
 
 def load(tabular, bindings=None, delimiter=None):
     """Load the tabular data into curses.
 
-       The tabular data can be a filename to a csv file or a Pandas dataframe.
-       Launches a curses view.
+    The tabular data can be a filename to a csv file or a Pandas dataframe.
+    Launches a curses view.
 
     """
     if delimiter is None:
-        delimiter = ','  # default Pandas behavior
+        delimiter = ","  # default Pandas behavior
 
-    name = ''
+    name = ""
     if isinstance(tabular, str):
         import pandas as pd
+
         name = tabular
         tabular = pd.read_csv(tabular, delimiter=delimiter)
     model = Model(tabular, name)
@@ -42,10 +44,8 @@ def load(tabular, bindings=None, delimiter=None):
 
 def _setup_args():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument(
-        'csv', help='The path to the csv file')
-    arg_parser.add_argument(
-        '--delimiter', help='Choose delimiter')
+    arg_parser.add_argument("csv", help="The path to the csv file")
+    arg_parser.add_argument("--delimiter", help="Choose delimiter")
     options, _ = arg_parser.parse_known_args()
     return options
 
@@ -55,8 +55,8 @@ def main():
     load(options.csv, delimiter=options.delimiter)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 
-__version__ = '0.0.12'
-__all__ = ['binding', 'load']
+__version__ = "0.0.13"
+__all__ = ["binding", "load"]

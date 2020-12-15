@@ -1,60 +1,59 @@
-import curses
 from .bindings import binding
 
 
 class clipboard:
     def __init__(self):
-        self.val = float('nan')
+        self.val = float("nan")
 
     def copy(self, model, nav, io, *args, **kwargs):
         self.val = model.get(nav.row, nav.col)
-        io.message('copied {}'.format(self.val))
+        io.message("copied {}".format(self.val))
 
     def paste(self, model, nav, io, *args, **kwargs):
         model.set(self.val)
-        io.message('paste {}'.format(self.val))
+        io.message("paste {}".format(self.val))
 
     def cut(self, model, nav, io, *args, **kwargs):
         self.copy(model, nav, io, *args, **kwargs)
         try:
-            model.set(float('nan'))
+            model.set(float("nan"))
         except ValueError:
             model.set(0)
-        io.message('cut {}'.format(self.val))
+        io.message("cut {}".format(self.val))
 
 
 _cb = clipboard()
 
 
-@binding('c')
+@binding("c")
 def _cp(model, nav, io, *args, **kwargs):
     _cb.copy(model, nav, io, *args, **kwargs)
 
 
-@binding('v')
+@binding("v")
 def _paste(model, nav, io, *args, **kwargs):
     _cb.paste(model, nav, io, *args, **kwargs)
 
 
-@binding('x')
+@binding("x")
 def _cut(model, nav, io, *args, **kwargs):
     _cb.cut(model, nav, io, *args, **kwargs)
 
 
-@binding('i')
+@binding("i")
 def cell_input(model, nav, io, *args, **kwargs):
-    #inpt = io.user_input('Enter value to input: ')
-    #try:
+    # inpt = io.user_input('Enter value to input: ')
+    # try:
     #    inpt = float(inpt)
     #    df.iat[nav.row, nav.col] = inpt
-    #except ValueError as err:
+    # except ValueError as err:
     #    io.message(err)
     pass
 
 
-@binding('/')
+@binding("/")
 def search(model, nav, io, *args, **kwargs):
-    inpt = io.user_input('Search: ')
+    inpt = io.user_input("Search: ")
     inpt = 5.0
     srch = str(inpt).strip()
     for r in range(model.rows):
@@ -63,7 +62,7 @@ def search(model, nav, io, *args, **kwargs):
             if val == srch:
                 print(r, c)
                 return
-    io.message('Did not find {srch}'.format(srch=srch))
+    io.message("Did not find {srch}".format(srch=srch))
 
 
 class summer:
@@ -72,23 +71,23 @@ class summer:
 
     def add(self, model, nav, io, *args, **kwargs):
         self.sum_ += model.get()
-        io.message('Current sum: {}'.format(self.sum_))
+        io.message("Current sum: {}".format(self.sum_))
 
     def flush(self, model, nav, io, *args, **kwargs):
         model.set(self.sum_)
-        io.message('Flushed: {}'.format(self.sum_))
+        io.message("Flushed: {}".format(self.sum_))
         self.sum_ = 0
 
 
 autumn = summer()
 
 
-@binding('s')
+@binding("s")
 def _add(model, nav, io, *args, **kwargs):
     autumn.add(model, nav, io, *args, **kwargs)
 
 
-@binding('f')
+@binding("f")
 def _flush(model, nav, io, *args, **kwargs):
     autumn.flush(model, nav, io, *args, **kwargs)
 
@@ -112,9 +111,10 @@ def _live(M, i, j):
     return 1 if count == 3 else 0
 
 
-@binding('L')
+@binding("L")
 def game_of_life(model, nav, io, *args, **kwargs):
     import copy
+
     G = model.df.values
     Gp = copy.deepcopy(G)
     s = G.shape
@@ -125,6 +125,7 @@ def game_of_life(model, nav, io, *args, **kwargs):
         for j in range(s[1]):
             model.set(Gp[i][j], i, j)
 
-@binding('2')
+
+@binding("2")
 def _(model, *args, **kwargs):
-    model.set(model.get()**2)
+    model.set(model.get() ** 2)

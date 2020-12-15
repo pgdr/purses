@@ -1,5 +1,5 @@
 class Model(object):
-    def __init__(self, df, fname='Purses'):
+    def __init__(self, df, fname="Purses"):
         self.df = df
         self.fname = fname
         self.show_index = True
@@ -7,7 +7,7 @@ class Model(object):
     @property
     def columns(self):
         if self.show_index:
-            return [''] + list(self.df.columns)
+            return [""] + list(self.df.columns)
         return list(self.df.columns)
 
     def row(self, r):

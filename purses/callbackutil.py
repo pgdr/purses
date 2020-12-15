@@ -5,12 +5,13 @@ model into nicer functions for the callbacks.
 
 """
 
+
 class callback_io(object):
     def __init__(self, status_area):
         self.status = status_area
 
-    def user_input(self, message='Enter input: '):
-        return 'Not supported'
+    def user_input(self, message="Enter input: "):
+        return "Not supported"
 
     def message(self, message):
         if self.status:
@@ -19,8 +20,8 @@ class callback_io(object):
 
     def clear(self):
         pass
-        #if self.status:
-            #self.self.status.clear()
+        # if self.status:
+        # self.self.status.clear()
 
 
 class callback_model(object):
